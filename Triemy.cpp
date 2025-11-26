@@ -5,6 +5,12 @@ class TrieNode {
 public:    
     string value = "";
     map<char, TrieNode*> child;
+    
+    ~TrieNode() {
+        for (auto& p : child) {
+            delete p.second;
+        }
+    }
 };
 
 class Trie {
@@ -14,8 +20,12 @@ public:
         root = new TrieNode;
     }
     
+    ~Trie() {
+        delete root;
+    }
+    
 public:
-    void insert(string key, string value) {
+    void insert(const string &key, const string &value) {
         TrieNode* current = root;
         int size = key.size();
         for (int i = 0; i < size; i++) {
@@ -27,17 +37,17 @@ public:
         current->value = value;
     }
     
-    string search(string key) {
+    optional<string> search(const string &key) const {
         TrieNode* current = root;
         int size = key.size();
         for (int i = 0; i < size; i++) {
             if (current->child.find(key[i]) == current->child.end()) {
-                return "not found";
+                return nullopt;
             }
             current = current->child[key[i]];
         }
         if (current->value == "") {
-            return "not found";
+            return nullopt;
         }
         return current->value;
     } 
@@ -51,21 +61,24 @@ public:
         t = new Trie();
     }
     
-    void addRoutes(string route, string value) {
+    ~Router() {
+        delete t;
+    }
+    
+    void addRoutes(const string &route, const string &value) {
         t->insert(route, value);
     }
     
     string getRoute(string route) {
-        return t->search(route);
+        auto res = t->search(route);
+        return res.value_or("not found");
     }
     
 };
 
-
-
-
 int main() {
     Router r;
+    
     r.addRoutes("/foo", "value");
     r.addRoutes("/foo/bar", "happy");
     cout << r.getRoute("/foo") << endl;
